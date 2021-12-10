@@ -26,7 +26,7 @@ int main(void)
 
         ClearBackground(RAYWHITE);
 
-        DrawText("Olá Manu, sua primeira Janela", 200, 200, 60, LIGHTGRAY);
+        DrawText("Olá Manu, sua primeira Janela", 200, 200, 30, DARKGREEN);
 
         EndDrawing();
         //----------------------------------------------------------------------------------
