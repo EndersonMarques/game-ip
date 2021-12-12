@@ -31,6 +31,7 @@ int main(void)
 
     Texture2D textura = LoadTexture("assets/banner.png");
 
+
     // Carregando textura
     Texture2D loadingTexture = LoadTexture("assets/loading-bar.png"); // Texture loading
 
