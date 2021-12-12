@@ -1,5 +1,8 @@
 #include "include/raylib.h"
 
+#define MAX_FRAME_SPEED 15
+#define MIN_FRAME_SPEED 1
+
 // Estrutura de telas
 typedef enum TelaGame
 {
@@ -18,7 +21,29 @@ int main(void)
 
     InitWindow(screenWidth, screenHeight, "Game - IP - CIN");
 
+    //Inicializando device de audio
+    InitAudioDevice();
+    //Inicializando sons
+    Sound intro = LoadSound("assets/intro.mp3");
+    //Tocando
+    PlaySound(intro);
+    bool pause = false;
+
     Texture2D textura = LoadTexture("assets/banner.png");
+
+    // Carregando textura
+    Texture2D loadingTexture = LoadTexture("assets/loading-bar.png"); // Texture loading
+
+    //Posição na tela da sprit
+    Vector2 position = {306.0f, 250.0f};
+    //posição da quadro da sprit
+    Rectangle frameRec = {0.0f, 0.0f, (float)loadingTexture.width / 48, (float)loadingTexture.height};
+
+    //Frame atual
+    int frameAtual = 0;
+    //Contador do frame
+    int framesCounter = 0;
+    int framesSpeed = 8; // número de quadros spritesheet mostrados por segundo
 
     //Tela atual
     TelaGame telaAtual = LOGO;
@@ -33,11 +58,22 @@ int main(void)
     while (!WindowShouldClose()) // Detect window close button or ESC key
     {
         // Update
+
+        if (IsKeyPressed(KEY_P))
+        {
+            pause = !pause;
+            if (pause)
+                PauseSound(intro);
+            else
+                ResumeSound(intro);
+        }
+
         switch (telaAtual)
         {
         case LOGO:
             contador_frame++;
-            if (contador_frame > 120)
+            // depois de 5.5 segundos vai pro menu
+            if (contador_frame > 330)
             {
                 telaAtual = MENU;
             }
@@ -67,6 +103,30 @@ int main(void)
         }
         //----------------------------------------------------------------------------------
         // TODO: Update your variables here
+
+        framesCounter++;
+        if (framesCounter >= (60 / framesSpeed))
+        {
+            framesCounter = 0;
+            frameAtual++;
+
+            if (frameAtual > 50)
+            {
+                frameAtual = 0;
+            }
+
+            frameRec.x = (float)frameAtual * (float)loadingTexture.width / 48;
+
+            if (framesSpeed > MAX_FRAME_SPEED)
+            {
+                framesSpeed = MAX_FRAME_SPEED;
+            }
+            else if (framesSpeed < MIN_FRAME_SPEED)
+            {
+                framesSpeed = MIN_FRAME_SPEED;
+            }
+        }
+
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -78,6 +138,7 @@ int main(void)
         {
         case LOGO:
             DrawText("Carregando o Jogo Peste", 200, 200, 35, DARKGREEN);
+            DrawTextureRec(loadingTexture, frameRec, position, RAYWHITE);
             break;
 
         case MENU:
@@ -100,7 +161,10 @@ int main(void)
 
     // De-Initialization
     UnloadTexture(textura);
+    UnloadTexture(loadingTexture);
+    UnloadSound(intro);
     //--------------------------------------------------------------------------------------
+    CloseAudioDevice();
     CloseWindow(); // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
