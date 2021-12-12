@@ -35,7 +35,7 @@ int main(void)
     Texture2D loadingTexture = LoadTexture("assets/loading-bar.png"); // Texture loading
 
     //Posição na tela da sprit
-    Vector2 position = {306.0f, 250.0f};
+    Vector2 position = {306.0f, 170.0f};
     //posição da quadro da sprit
     Rectangle frameRec = {0.0f, 0.0f, (float)loadingTexture.width / 48, (float)loadingTexture.height};
 
@@ -137,7 +137,7 @@ int main(void)
         switch (telaAtual)
         {
         case LOGO:
-            DrawText("Carregando o Jogo Peste", 200, 200, 35, DARKGREEN);
+            DrawText("Carregando o Jogo Peste", 200, 120, 35, DARKGREEN);
             DrawTextureRec(loadingTexture, frameRec, position, RAYWHITE);
             break;
 
