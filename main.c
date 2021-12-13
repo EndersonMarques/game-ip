@@ -30,6 +30,7 @@ int main(void)
     bool pause = false;
 
     Texture2D textura = LoadTexture("assets/banner.png");
+    Texture2D loseTelaFinal = LoadTexture("assets/lose-telafinal.png");
 
     // Carregando textura
     Texture2D loadingTexture = LoadTexture("assets/loading-bar.png"); // Texture loading
@@ -73,7 +74,7 @@ int main(void)
         case LOGO:
             contador_frame++;
             // depois de 5.5 segundos vai pro menu
-            if (contador_frame > 330)
+            if (contador_frame > 5.5 * 60)
             {
                 telaAtual = MENU;
             }
@@ -149,7 +150,8 @@ int main(void)
             DrawText("Tela do Jogo", 40, 200, 35, DARKBLUE);
             break;
         case FIM:
-            DrawText("MORRESSE BIXO :/", 150, 150, 50, DARKBLUE);
+            DrawTexture( loseTelaFinal,  screenWidth / 2 - loseTelaFinal.width / 2, 20, WHITE);
+            DrawText("Pressione ENTER para jogar de novo", 85, 240, 35, DARKBLUE);
             break;
         default:
             break;
@@ -162,6 +164,7 @@ int main(void)
     // De-Initialization
     UnloadTexture(textura);
     UnloadTexture(loadingTexture);
+    UnloadTexture(loseTelaFinal);
     UnloadSound(intro);
     //--------------------------------------------------------------------------------------
     CloseAudioDevice();
