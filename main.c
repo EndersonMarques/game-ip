@@ -188,11 +188,7 @@ int main(void)
     // De-Initialization
     UnloadTexture(textura);
     UnloadTexture(loadingTexture);
-<<<<<<< HEAD
     UnloadTexture(roadTexture);
-=======
-    UnloadTexture(loseTelaFinal);
->>>>>>> acd6686b8de5bdad5111ee386ff1734af1c8b2ad
     UnloadSound(intro);
     //--------------------------------------------------------------------------------------
     CloseAudioDevice();
