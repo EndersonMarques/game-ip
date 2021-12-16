@@ -39,7 +39,7 @@ int main(void)
     // Crregando Carro
     Texture2D carro = LoadTexture("assets/Car-azul.png");
     Rectangle frameCar = {0.0f, 0.0f, (float)carro.width / 2, (float)carro.height}; // Posição do frame na sprit do carro
-    Vector2 carroPosicao = {screenWidth / 2 - carro.width / 2, (float)screenHeight / 2 + 20};
+    Vector2 carroPosicao = {screenWidth / 2 - carro.width / 2, (float)screenHeight / 2 + 50};
 
     // Posição na tela da sprit
     Vector2 position = {306.0f, 170.0f};
@@ -53,6 +53,11 @@ int main(void)
     int framesCounter = 0;
     int framesSpeed = 8; // número de quadros spritesheet mostrados por segundo
 
+    //saltos do carro
+    int saltoCarro = 30;
+    int limiteBaixo = carroPosicao.y + saltoCarro;
+    int limiteCima = carroPosicao.y - saltoCarro;
+
     // Tela atual
     TelaGame telaAtual = LOGO;
 
@@ -61,7 +66,7 @@ int main(void)
 
     SetTargetFPS(60); // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
-
+    
     // Main game loop
     while (!WindowShouldClose()) // Detect window close button or ESC key
     {
@@ -75,6 +80,16 @@ int main(void)
             else
                 ResumeSound(intro);
         }
+
+        if (IsKeyPressed(KEY_DOWN) && carroPosicao.y < limiteBaixo )
+        {
+            carroPosicao.y += saltoCarro;
+        }
+        if (IsKeyPressed(KEY_UP) && carroPosicao.y > limiteCima )
+        {
+            carroPosicao.y -= saltoCarro;
+        }
+
 
         switch (telaAtual)
         {
