@@ -1,8 +1,5 @@
 #include "include/raylib.h"
 
-#define MAX_FRAME_SPEED 15
-#define MIN_FRAME_SPEED 1
-
 // Estrutura de telas
 typedef enum TelaGame
 {
@@ -21,32 +18,42 @@ int main(void)
 
     InitWindow(screenWidth, screenHeight, "Game - IP - CIN");
 
-    //Inicializando device de audio
+    // Inicializando device de audio
     InitAudioDevice();
-    //Inicializando sons
+    // Inicializando sons
     Sound intro = LoadSound("assets/intro.mp3");
-    //Tocando
+    // Tocando
     PlaySound(intro);
     bool pause = false;
 
     Texture2D textura = LoadTexture("assets/banner.png");
     Texture2D loseTelaFinal = LoadTexture("assets/lose-telafinal.png");
 
-    // Carregando textura
+    // Carregando textura de loading
     Texture2D loadingTexture = LoadTexture("assets/loading-bar.png"); // Texture loading
 
-    //Posição na tela da sprit
+    // Carregando pista
+    Texture2D roadTexture = LoadTexture("assets/pista.png");
+    Vector2 pistaPosicao = {0.0f, (float)screenHeight - 350};
+
+    // Crregando Carro
+    Texture2D carro = LoadTexture("assets/Car-azul.png");
+    Rectangle frameCar = {0.0f, 0.0f, (float)carro.width / 2, (float)carro.height}; // Posição do frame na sprit do carro
+    Vector2 carroPosicao = {screenWidth / 2 - carro.width / 2, (float)screenHeight / 2 + 20};
+
+    // Posição na tela da sprit
     Vector2 position = {306.0f, 170.0f};
-    //posição da quadro da sprit
+    // posição da quadro da sprit
     Rectangle frameRec = {0.0f, 0.0f, (float)loadingTexture.width / 48, (float)loadingTexture.height};
 
-    //Frame atual
+    // Frame atual
     int frameAtual = 0;
-    //Contador do frame
+    int frameAtualCarro = 0;
+    // Contador do frame
     int framesCounter = 0;
     int framesSpeed = 8; // número de quadros spritesheet mostrados por segundo
 
-    //Tela atual
+    // Tela atual
     TelaGame telaAtual = LOGO;
 
     int contador_frame = 0;
@@ -110,23 +117,34 @@ int main(void)
         {
             framesCounter = 0;
             frameAtual++;
+            frameAtualCarro++;
 
             if (frameAtual > 50)
             {
                 frameAtual = 0;
             }
 
-            frameRec.x = (float)frameAtual * (float)loadingTexture.width / 48;
+            if (frameAtualCarro > 2)
+            {
+                frameAtualCarro = 0;
+            }
 
-            if (framesSpeed > MAX_FRAME_SPEED)
-            {
-                framesSpeed = MAX_FRAME_SPEED;
-            }
-            else if (framesSpeed < MIN_FRAME_SPEED)
-            {
-                framesSpeed = MIN_FRAME_SPEED;
-            }
+            frameRec.x = (float)frameAtual * (float)loadingTexture.width / 48;
+            frameCar.x = (float)frameAtualCarro * (float)carro.width / 2;
         }
+
+        // if (framesCounter >= (60 / framesSpeed))
+        // {
+        //     if (frameAtualCarro > 2)
+        //     {
+        //         frameAtualCarro = 0;
+        //     }
+        //     frameCar.x = (float)frameAtualCarro * (float)carro.width / 2;
+        // }
+
+        pistaPosicao.x -= 2;
+        if (pistaPosicao.x <= -roadTexture.width)
+            pistaPosicao.x = 0;
 
         //----------------------------------------------------------------------------------
 
@@ -147,8 +165,14 @@ int main(void)
             DrawText("Pressione ENTER para iniciar", 280, 350, 20, RED);
             break;
         case GAMEPLAY:
-            DrawText("Tela do Jogo", 40, 200, 35, DARKBLUE);
+        {
+
+            DrawTextureEx(roadTexture, pistaPosicao, 0.0f, 1.0f, WHITE);
+            DrawTextureEx(roadTexture, (Vector2){roadTexture.width + pistaPosicao.x, screenHeight - 350}, 0.0f, 1.0f, WHITE);
+
+            DrawTextureRec(carro, frameCar, carroPosicao, WHITE);
             break;
+        }
         case FIM:
             DrawTexture( loseTelaFinal,  screenWidth / 2 - loseTelaFinal.width / 2, 20, WHITE);
             DrawText("Pressione ENTER para jogar de novo", 85, 240, 35, DARKBLUE);
@@ -164,7 +188,7 @@ int main(void)
     // De-Initialization
     UnloadTexture(textura);
     UnloadTexture(loadingTexture);
-    UnloadTexture(loseTelaFinal);
+    UnloadTexture(roadTexture);
     UnloadSound(intro);
     //--------------------------------------------------------------------------------------
     CloseAudioDevice();
