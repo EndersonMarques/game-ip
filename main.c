@@ -1,5 +1,7 @@
 #include "include/raylib.h"
+#include <stdio.h>
 
+#define Inimigo_Amount 1
 // Estrutura de telas
 typedef enum TelaGame
 {
@@ -8,6 +10,15 @@ typedef enum TelaGame
     GAMEPLAY,
     FIM
 } TelaGame;
+
+typedef struct Inimigo
+{
+    Rectangle rec;
+    bool ativo;
+    Color cor;
+} Inimigo;
+
+static Inimigo inimigo[Inimigo_Amount] = {0};
 
 int main(void)
 {
@@ -53,20 +64,33 @@ int main(void)
     int framesCounter = 0;
     int framesSpeed = 8; // número de quadros spritesheet mostrados por segundo
 
-    //saltos do carro
+    // saltos do carro
     int saltoCarro = 30;
     int limiteBaixo = carroPosicao.y + saltoCarro;
     int limiteCima = carroPosicao.y - saltoCarro;
+    // Retangulo do carro
+    Rectangle carroRetangulo = {carroPosicao.x, carroPosicao.y, frameCar.width, frameCar.height};
 
     // Tela atual
-    TelaGame telaAtual = LOGO;
+    // TelaGame telaAtual = LOGO;
+    TelaGame telaAtual = GAMEPLAY;
 
     int contador_frame = 0;
     int life = 100;
 
+    for (int i = 0; i < Inimigo_Amount; i++)
+    {
+        inimigo[i].rec.x = screenWidth - 14;
+        inimigo[i].rec.y = 200;
+        inimigo[i].rec.width = 70;
+        inimigo[i].rec.height = 70;
+        inimigo[i].ativo = true;
+        inimigo[i].cor = RED;
+    }
+
     SetTargetFPS(60); // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
-    
+
     // Main game loop
     while (!WindowShouldClose()) // Detect window close button or ESC key
     {
@@ -81,19 +105,10 @@ int main(void)
                 ResumeSound(intro);
         }
 
-        if (IsKeyPressed(KEY_DOWN) && carroPosicao.y < limiteBaixo )
-        {
-            carroPosicao.y += saltoCarro;
-        }
-        if (IsKeyPressed(KEY_UP) && carroPosicao.y > limiteCima )
-        {
-            carroPosicao.y -= saltoCarro;
-        }
-
-
         switch (telaAtual)
         {
         case LOGO:
+
             contador_frame++;
             // depois de 5.5 segundos vai pro menu
             if (contador_frame > 5.5 * 60)
@@ -109,10 +124,43 @@ int main(void)
             }
             break;
         case GAMEPLAY:
+            PauseSound(intro);
+
             if (life <= 0 || IsKeyPressed(KEY_ENTER))
             {
                 telaAtual = FIM;
             }
+
+            if (IsKeyPressed(KEY_DOWN) && carroPosicao.y < limiteBaixo)
+            {
+                carroPosicao.y += saltoCarro;
+                carroRetangulo.y += saltoCarro;
+            }
+            if (IsKeyPressed(KEY_UP) && carroPosicao.y > limiteCima)
+            {
+                carroPosicao.y -= saltoCarro;
+                carroRetangulo.y -= saltoCarro;
+            }
+
+            for (int i = 0; i < Inimigo_Amount; i++)
+            {
+                if (inimigo[i].ativo)
+                {
+                    inimigo[i].rec.x -= 1;
+                }
+            }
+
+            for (int i = 0; i < Inimigo_Amount; i++)
+            {
+                if (inimigo[i].ativo)
+                {
+                    if (CheckCollisionRecs(inimigo[i].rec, carroRetangulo))
+                    {
+                        printf("\nTEVE COLISAO DANADO\n");
+                    }
+                }
+            }
+
             break;
         case FIM:
             if (IsKeyPressed(KEY_ENTER))
@@ -148,15 +196,6 @@ int main(void)
             frameCar.x = (float)frameAtualCarro * (float)carro.width / 2;
         }
 
-        // if (framesCounter >= (60 / framesSpeed))
-        // {
-        //     if (frameAtualCarro > 2)
-        //     {
-        //         frameAtualCarro = 0;
-        //     }
-        //     frameCar.x = (float)frameAtualCarro * (float)carro.width / 2;
-        // }
-
         pistaPosicao.x -= 2;
         if (pistaPosicao.x <= -roadTexture.width)
             pistaPosicao.x = 0;
@@ -186,10 +225,21 @@ int main(void)
             DrawTextureEx(roadTexture, (Vector2){roadTexture.width + pistaPosicao.x, screenHeight - 350}, 0.0f, 1.0f, WHITE);
 
             DrawTextureRec(carro, frameCar, carroPosicao, WHITE);
+
+            for (int i = 0; i < Inimigo_Amount; i++)
+            {
+                if (inimigo[i].ativo)
+                {
+                    DrawRectangleRec(inimigo[i].rec, inimigo[i].cor);
+                }
+            }
+
+            DrawRectangleRec(carroRetangulo, (Color){0, 0, 0, 0});
+
             break;
         }
         case FIM:
-            DrawTexture( loseTelaFinal,  screenWidth / 2 - loseTelaFinal.width / 2, 20, WHITE);
+            DrawTexture(loseTelaFinal, screenWidth / 2 - loseTelaFinal.width / 2, 20, WHITE);
             DrawText("Pressione ENTER para jogar de novo", 85, 240, 35, DARKBLUE);
             break;
         default:
