@@ -44,14 +44,29 @@ int main(void)
     // Carregando textura de loading
     Texture2D loadingTexture = LoadTexture("assets/loading-bar.png"); // Texture loading
 
+    //Carregando ceu
+    Texture2D ceuTexture = LoadTexture("assets/recife_sky.png");
+    Vector2 ceuPosicao = {0.0f, 0.0f};
+
     // Carregando pista
     Texture2D roadTexture = LoadTexture("assets/road2.png");
     Vector2 pistaPosicao = {0.0f, (float)screenHeight - 350};
 
+    //Carregando cidade
+    Texture2D cidadeTexture = LoadTexture("assets/recife_city.png");
+    Vector2 cidadePosicao = {0.0f,  pistaPosicao.y + 135 - cidadeTexture.height + 69};
+
+    // Carregando meio fio
+    Texture2D meiofioTexture = LoadTexture("assets/meio_fio.png");
+    Vector2 meioFioPosicao = {0.0f, pistaPosicao.y + roadTexture.height};
+
+    // Carregando moeda
+    Texture2D coinTexture = LoadTexture("assets/coin.png");
+
     // Crregando Carro
     Texture2D carro = LoadTexture("assets/Car-azul.png");
     Rectangle frameCar = {0.0f, 0.0f, (float)carro.width / 2, (float)carro.height}; // Posição do frame na sprit do carro
-    Vector2 carroPosicao = {screenWidth / 2 - carro.width / 2, pistaPosicao.y + roadTexture.height - 60 - saltoCarro };
+    Vector2 carroPosicao = {screenWidth / 2 - carro.width / 2, pistaPosicao.y + roadTexture.height - 60 - saltoCarro - 1 };
 
     // Posição na tela da sprit
     Vector2 position = {306.0f, 170.0f};
@@ -71,6 +86,9 @@ int main(void)
     int contadorFramesInimigos = 0;
     int velocidadeInimigo = 2;
 
+    //distancia entre inimigos
+    int distanciaInimigos = 90;
+
     // saltos do carro
     
     int limiteBaixo = carroPosicao.y + 2 * saltoCarro;
@@ -88,15 +106,17 @@ int main(void)
     for (int i = 0; i < Inimigo_Amount; i++)
     {
         if( i > 0 )
-            inimigo[i].rec.x = inimigo[i-1].rec.x + inimigo[i-1].rec.width + 60;
+            inimigo[i].rec.x = inimigo[i-1].rec.x + inimigo[i-1].rec.width + distanciaInimigos;
         else
             inimigo[i].rec.x = screenWidth;
             
-        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-1, 1) * saltoCarro;
+        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarro;
+        if( i > 0 )
+            while (inimigo[i].rec.y == inimigo[i-1].rec.y)
+                inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarro;
         inimigo[i].rec.width = brt.width;
         inimigo[i].rec.height = 30;
         inimigo[i].ativo = false;
-        inimigo[i].cor = RED;
     }
 
     SetTargetFPS(60); // Set our game to run at 60 frames-per-second
@@ -153,6 +173,8 @@ int main(void)
                 carroRetangulo.y -= saltoCarro;
             }
             
+
+            //inicializa inimigos
             contadorFramesInimigos += 1;
 
             if (contadorFramesInimigos > 40){
@@ -166,7 +188,7 @@ int main(void)
             }
 
             // Logica
-
+            
             for (int i = 0; i < Inimigo_Amount; i++)
             {
                 if (inimigo[i].ativo)
@@ -174,9 +196,18 @@ int main(void)
                     inimigo[i].rec.x -= velocidadeInimigo;
                     if (inimigo[i].rec.x + inimigo[i].rec.width <= 0){
 
-                        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-1, 1) * saltoCarro;
+                        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarro;
                         inimigo[i].ativo = false;
+                        if( i > 0 )
+                            while (inimigo[i].rec.y == inimigo[i-1].rec.y)
+                                inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarro;
                     }
+                }
+                else{
+                    if( i > 0 )
+                        inimigo[i].rec.x = inimigo[i-1].rec.x + inimigo[i-1].rec.width + distanciaInimigos;
+                    else
+                        inimigo[i].rec.x = screenWidth + inimigo[i].rec.width / velocidadeInimigo + distanciaInimigos;
                 }
             }
 
@@ -253,9 +284,21 @@ int main(void)
             frameCar.x = (float)frameAtualCarro * (float)carro.width / 2;
         }
 
-        pistaPosicao.x -= 2;
+        pistaPosicao.x -= 7;
         if (pistaPosicao.x <= -roadTexture.width)
             pistaPosicao.x = 0;
+
+        meioFioPosicao.x -= 7;
+        if (meioFioPosicao.x <= -meiofioTexture.width)
+            meioFioPosicao.x = 0;
+
+        ceuPosicao.x -= 2;
+        if (ceuPosicao.x <= -ceuTexture.width)
+            ceuPosicao.x = 0;
+
+        cidadePosicao.x -= 7;
+        if (cidadePosicao.x <= -cidadeTexture.width)
+            cidadePosicao.x = 0;        
 
         //----------------------------------------------------------------------------------
 
@@ -277,23 +320,31 @@ int main(void)
             break;
         case GAMEPLAY:
         {
+            DrawTextureEx(ceuTexture, ceuPosicao, 0.0f, 1.0f, WHITE);
+            DrawTextureEx(ceuTexture, (Vector2){ceuTexture.width + ceuPosicao.x, 0.0f}, 0.0f, 1.0f, WHITE);
+
+            DrawTextureEx(cidadeTexture, cidadePosicao, 0.0f, 1.0f, WHITE);
+            DrawTextureEx(cidadeTexture, (Vector2){cidadeTexture.width + cidadePosicao.x, pistaPosicao.y + 135 - cidadeTexture.height + 69}, 0.0f, 1.0f, WHITE);
 
             DrawTextureEx(roadTexture, pistaPosicao, 0.0f, 1.0f, WHITE);
             DrawTextureEx(roadTexture, (Vector2){roadTexture.width + pistaPosicao.x, screenHeight - 350}, 0.0f, 1.0f, WHITE);
+
+            DrawTextureRec(carro, frameCar, carroPosicao, WHITE);
+            DrawRectangleRec(carroRetangulo, (Color){0, 0, 0, 0});
+            // DrawRectangleRec(carroRetangulo, WHITE);
 
             for (int i = 0; i < Inimigo_Amount; i++)
             {
                 if (inimigo[i].ativo)
                 {
-                    // DrawRectangleRec(inimigo[i].rec, (Color){0,0,0,0});
-                    DrawRectangleRec(inimigo[i].rec, RED);
-                    DrawTexture(brt, inimigo[i].rec.x, inimigo[i].rec.y-34, WHITE);
+                    DrawRectangleRec(inimigo[i].rec, (Color){0,0,0,0});
+                    // DrawRectangleRec(inimigo[i].rec, WHITE);
+                    DrawTexture(brt, inimigo[i].rec.x, inimigo[i].rec.y-36, WHITE);
                 }
             }
 
-            DrawTextureRec(carro, frameCar, carroPosicao, WHITE);
-            // DrawRectangleRec(carroRetangulo, (Color){0, 0, 0, 0});
-            DrawRectangleRec(carroRetangulo, RED);
+            DrawTextureEx(meiofioTexture, meioFioPosicao, 0.0f, 1.0f, WHITE);
+            DrawTextureEx(meiofioTexture, (Vector2){meiofioTexture.width + meioFioPosicao.x, pistaPosicao.y + roadTexture.height}, 0.0f, 1.0f, WHITE);
 
             break;
         }
@@ -313,9 +364,13 @@ int main(void)
     UnloadTexture(textura);
     UnloadTexture(loadingTexture);
     UnloadTexture(roadTexture);
+    UnloadTexture(ceuTexture);
+    UnloadTexture(cidadeTexture);
     UnloadTexture(brt);
+    UnloadTexture(coinTexture);
     UnloadTexture(loseTelaFinal);
     UnloadTexture(carro);
+    UnloadTexture(meiofioTexture);
     UnloadSound(intro);
     //--------------------------------------------------------------------------------------
     CloseAudioDevice();
