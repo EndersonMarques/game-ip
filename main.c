@@ -1,7 +1,7 @@
 #include "include/raylib.h"
 #include <stdio.h>
 
-#define Inimigo_Amount 1
+#define Inimigo_Amount 4
 // Estrutura de telas
 typedef enum TelaGame
 {
@@ -26,6 +26,7 @@ int main(void)
     //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
     const int screenHeight = 450;
+    int saltoCarro = 35;
 
     InitWindow(screenWidth, screenHeight, "Game - IP - CIN");
 
@@ -44,18 +45,22 @@ int main(void)
     Texture2D loadingTexture = LoadTexture("assets/loading-bar.png"); // Texture loading
 
     // Carregando pista
-    Texture2D roadTexture = LoadTexture("assets/pista.png");
+    Texture2D roadTexture = LoadTexture("assets/road2.png");
     Vector2 pistaPosicao = {0.0f, (float)screenHeight - 350};
 
     // Crregando Carro
     Texture2D carro = LoadTexture("assets/Car-azul.png");
     Rectangle frameCar = {0.0f, 0.0f, (float)carro.width / 2, (float)carro.height}; // Posição do frame na sprit do carro
-    Vector2 carroPosicao = {screenWidth / 2 - carro.width / 2, (float)screenHeight / 2 + 50};
+    Vector2 carroPosicao = {screenWidth / 2 - carro.width / 2, pistaPosicao.y + roadTexture.height - 60 - saltoCarro };
 
     // Posição na tela da sprit
     Vector2 position = {306.0f, 170.0f};
     // posição da quadro da sprit
     Rectangle frameRec = {0.0f, 0.0f, (float)loadingTexture.width / 48, (float)loadingTexture.height};
+
+
+    //Carregar textura do BRT
+    Texture2D brt = LoadTexture("assets/brt_sozinho.png");
 
     // Frame atual
     int frameAtual = 0;
@@ -63,13 +68,15 @@ int main(void)
     // Contador do frame
     int framesCounter = 0;
     int framesSpeed = 8; // número de quadros spritesheet mostrados por segundo
+    int contadorFramesInimigos = 0;
+    int velocidadeInimigo = 2;
 
     // saltos do carro
-    int saltoCarro = 30;
-    int limiteBaixo = carroPosicao.y + saltoCarro;
-    int limiteCima = carroPosicao.y - saltoCarro;
+    
+    int limiteBaixo = carroPosicao.y + 2 * saltoCarro;
+    int limiteCima = carroPosicao.y -  2 * saltoCarro;
     // Retangulo do carro
-    Rectangle carroRetangulo = {carroPosicao.x, carroPosicao.y, frameCar.width, frameCar.height};
+    Rectangle carroRetangulo = {carroPosicao.x, carroPosicao.y, frameCar.width, 30};
 
     // Tela atual
     // TelaGame telaAtual = LOGO;
@@ -80,11 +87,15 @@ int main(void)
 
     for (int i = 0; i < Inimigo_Amount; i++)
     {
-        inimigo[i].rec.x = screenWidth - 14;
-        inimigo[i].rec.y = 200;
-        inimigo[i].rec.width = 70;
-        inimigo[i].rec.height = 70;
-        inimigo[i].ativo = true;
+        if( i > 0 )
+            inimigo[i].rec.x = inimigo[i-1].rec.x + inimigo[i-1].rec.width + 60;
+        else
+            inimigo[i].rec.x = screenWidth;
+            
+        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-1, 1) * saltoCarro;
+        inimigo[i].rec.width = brt.width;
+        inimigo[i].rec.height = 30;
+        inimigo[i].ativo = false;
         inimigo[i].cor = RED;
     }
 
@@ -141,14 +152,60 @@ int main(void)
                 carroPosicao.y -= saltoCarro;
                 carroRetangulo.y -= saltoCarro;
             }
+            
+            contadorFramesInimigos += 1;
+
+            if (contadorFramesInimigos > 40){
+                for (int i= 0; i < Inimigo_Amount; i++){
+                    if(!inimigo[i].ativo){
+                        inimigo[i].ativo = true;
+                        i = Inimigo_Amount;
+                    }
+                }
+                contadorFramesInimigos = 0;
+            }
+
+            // Logica
 
             for (int i = 0; i < Inimigo_Amount; i++)
             {
                 if (inimigo[i].ativo)
                 {
-                    inimigo[i].rec.x -= 1;
+                    inimigo[i].rec.x -= velocidadeInimigo;
+                    if (inimigo[i].rec.x + inimigo[i].rec.width <= 0){
+
+                        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-1, 1) * saltoCarro;
+                        inimigo[i].ativo = false;
+                    }
                 }
             }
+
+
+                // Enemies logic
+                // for (int i = 0; i < MAX_ENEMIES; i++)
+                // {
+                //     if (enemyActive[i])
+                //     {
+                //         enemyBounds[i].x -= enemySpeed;
+                //     }
+
+                //     // Check enemies out of screen
+                //     if (enemyBounds[i].x <= -128)
+                //     {
+                //         enemyActive[i] = false;
+                //         enemyType[i] = GetRandomValue(0, 3);
+                //         enemyRail[i] = GetRandomValue(0, 4);
+
+                //         // Make sure not two consecutive enemies in the same row
+                //         if (i > 0)
+                //             while (enemyRail[i] == enemyRail[i - 1])
+                //                 enemyRail[i] = GetRandomValue(0, 4);
+
+                //         enemyBounds[i] = (Rectangle){screenWidth + 14, 120 * enemyRail[i] + 90 + 14, 100, 100};
+                //     }
+                // }
+
+
 
             for (int i = 0; i < Inimigo_Amount; i++)
             {
@@ -224,17 +281,19 @@ int main(void)
             DrawTextureEx(roadTexture, pistaPosicao, 0.0f, 1.0f, WHITE);
             DrawTextureEx(roadTexture, (Vector2){roadTexture.width + pistaPosicao.x, screenHeight - 350}, 0.0f, 1.0f, WHITE);
 
-            DrawTextureRec(carro, frameCar, carroPosicao, WHITE);
-
             for (int i = 0; i < Inimigo_Amount; i++)
             {
                 if (inimigo[i].ativo)
                 {
-                    DrawRectangleRec(inimigo[i].rec, inimigo[i].cor);
+                    // DrawRectangleRec(inimigo[i].rec, (Color){0,0,0,0});
+                    DrawRectangleRec(inimigo[i].rec, RED);
+                    DrawTexture(brt, inimigo[i].rec.x, inimigo[i].rec.y-34, WHITE);
                 }
             }
 
-            DrawRectangleRec(carroRetangulo, (Color){0, 0, 0, 0});
+            DrawTextureRec(carro, frameCar, carroPosicao, WHITE);
+            // DrawRectangleRec(carroRetangulo, (Color){0, 0, 0, 0});
+            DrawRectangleRec(carroRetangulo, RED);
 
             break;
         }
@@ -254,6 +313,9 @@ int main(void)
     UnloadTexture(textura);
     UnloadTexture(loadingTexture);
     UnloadTexture(roadTexture);
+    UnloadTexture(brt);
+    UnloadTexture(loseTelaFinal);
+    UnloadTexture(carro);
     UnloadSound(intro);
     //--------------------------------------------------------------------------------------
     CloseAudioDevice();
