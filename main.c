@@ -203,7 +203,7 @@ int main(void)
                 
                 inimigo[i].rec.x -= velocidadePista;
 
-                if (inimigo[Inimigo_Amount-1].rec.x  <= screenWidth / 2 ){
+                if (inimigo[Inimigo_Amount-1].rec.x  <= screenWidth - inimigo[Inimigo_Amount-1].rec.width - distanciaInimigos ){
 
                     if( i == 0 && inimigo[i].rec.x + brt.width <= 0 ){
 
