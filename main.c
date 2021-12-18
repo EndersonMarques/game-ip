@@ -1,7 +1,7 @@
 #include "include/raylib.h"
 #include <stdio.h>
 
-#define Inimigo_Amount 4
+#define Inimigo_Amount 10
 // Estrutura de telas
 typedef enum TelaGame
 {
@@ -14,11 +14,14 @@ typedef enum TelaGame
 typedef struct Inimigo
 {
     Rectangle rec;
-    bool ativo;
     Color cor;
+    int obstaculoTipo;
+
 } Inimigo;
 
 static Inimigo inimigo[Inimigo_Amount] = {0};
+
+void inimigoAleatorio( Inimigo[], Texture2D [], int );
 
 int main(void)
 {
@@ -26,7 +29,8 @@ int main(void)
     //--------------------------------------------------------------------------------------
     const int screenWidth = 800;
     const int screenHeight = 450;
-    int saltoCarro = 35;
+    int saltoCarroVertical = 35;
+    int saltoCarroHorizontal = 67;
 
     InitWindow(screenWidth, screenHeight, "Game - IP - CIN");
 
@@ -57,7 +61,7 @@ int main(void)
     Vector2 cidadePosicao = {0.0f,  pistaPosicao.y + 135 - cidadeTexture.height + 69};
 
     // Carregando meio fio
-    Texture2D meiofioTexture = LoadTexture("assets/meio_fio.png");
+    Texture2D meiofioTexture = LoadTexture("assets/meio_fio2.png");
     Vector2 meioFioPosicao = {0.0f, pistaPosicao.y + roadTexture.height};
 
     // Carregando moeda
@@ -66,7 +70,7 @@ int main(void)
     // Crregando Carro
     Texture2D carro = LoadTexture("assets/Car-azul.png");
     Rectangle frameCar = {0.0f, 0.0f, (float)carro.width / 2, (float)carro.height}; // Posição do frame na sprit do carro
-    Vector2 carroPosicao = {screenWidth / 2 - carro.width / 2, pistaPosicao.y + roadTexture.height - 60 - saltoCarro - 1 };
+    Vector2 carroPosicao = {screenWidth / 2 - carro.width / 2, pistaPosicao.y + roadTexture.height - 60 - saltoCarroVertical - 1 };
 
     // Posição na tela da sprit
     Vector2 position = {306.0f, 170.0f};
@@ -74,8 +78,14 @@ int main(void)
     Rectangle frameRec = {0.0f, 0.0f, (float)loadingTexture.width / 48, (float)loadingTexture.height};
 
 
-    //Carregar textura do BRT
+    //Carregar textura obstaculos
+
     Texture2D brt = LoadTexture("assets/brt_sozinho.png");
+    Texture2D buraco = LoadTexture("assets/hole.png");
+    Texture2D tubarao = LoadTexture("assets/tubarao.png");
+    Texture2D obstaculos[4] = {brt, buraco, tubarao, coinTexture};
+
+
 
     // Frame atual
     int frameAtual = 0;
@@ -83,16 +93,17 @@ int main(void)
     // Contador do frame
     int framesCounter = 0;
     int framesSpeed = 8; // número de quadros spritesheet mostrados por segundo
-    int contadorFramesInimigos = 0;
-    int velocidadeInimigo = 2;
+    int velocidadePista = 7;
 
     //distancia entre inimigos
     int distanciaInimigos = 90;
 
     // saltos do carro
     
-    int limiteBaixo = carroPosicao.y + 2 * saltoCarro;
-    int limiteCima = carroPosicao.y -  2 * saltoCarro;
+    int limiteBaixo = carroPosicao.y + 2 * saltoCarroVertical;
+    int limiteCima = carroPosicao.y -  2 * saltoCarroVertical;
+    int limiteEsquerda = carroPosicao.x - 3 * saltoCarroHorizontal;
+    int limiteDireita = carroPosicao.x + 3 * saltoCarroHorizontal;
     // Retangulo do carro
     Rectangle carroRetangulo = {carroPosicao.x, carroPosicao.y, frameCar.width, 30};
 
@@ -101,22 +112,26 @@ int main(void)
     TelaGame telaAtual = GAMEPLAY;
 
     int contador_frame = 0;
-    int life = 100;
 
     for (int i = 0; i < Inimigo_Amount; i++)
-    {
-        if( i > 0 )
-            inimigo[i].rec.x = inimigo[i-1].rec.x + inimigo[i-1].rec.width + distanciaInimigos;
-        else
+    {   
+        inimigoAleatorio( inimigo, obstaculos, i );
+
+        if( i == 0 )
             inimigo[i].rec.x = screenWidth;
+        else
+            inimigo[i].rec.x = inimigo[i-1].rec.x + inimigo[i-1].rec.width + distanciaInimigos;
             
-        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarro;
+            
+        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarroVertical;
         if( i > 0 )
             while (inimigo[i].rec.y == inimigo[i-1].rec.y)
-                inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarro;
-        inimigo[i].rec.width = brt.width;
+                inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarroVertical;
+        
+        
+        inimigoAleatorio( inimigo, obstaculos, i );
+       
         inimigo[i].rec.height = 30;
-        inimigo[i].ativo = false;
     }
 
     SetTargetFPS(60); // Set our game to run at 60 frames-per-second
@@ -157,57 +172,59 @@ int main(void)
         case GAMEPLAY:
             PauseSound(intro);
 
-            if (life <= 0 || IsKeyPressed(KEY_ENTER))
+            if (IsKeyPressed(KEY_ENTER))
             {
                 telaAtual = FIM;
             }
 
             if (IsKeyPressed(KEY_DOWN) && carroPosicao.y < limiteBaixo)
             {
-                carroPosicao.y += saltoCarro;
-                carroRetangulo.y += saltoCarro;
+                carroPosicao.y += saltoCarroVertical;
+                carroRetangulo.y += saltoCarroVertical;
             }
             if (IsKeyPressed(KEY_UP) && carroPosicao.y > limiteCima)
             {
-                carroPosicao.y -= saltoCarro;
-                carroRetangulo.y -= saltoCarro;
+                carroPosicao.y -= saltoCarroVertical;
+                carroRetangulo.y -= saltoCarroVertical;
             }
-            
-
-            //inicializa inimigos
-            contadorFramesInimigos += 1;
-
-            if (contadorFramesInimigos > 40){
-                for (int i= 0; i < Inimigo_Amount; i++){
-                    if(!inimigo[i].ativo){
-                        inimigo[i].ativo = true;
-                        i = Inimigo_Amount;
-                    }
-                }
-                contadorFramesInimigos = 0;
+            if (IsKeyPressed(KEY_RIGHT) && carroPosicao.x < limiteDireita)
+            {
+                carroPosicao.x += saltoCarroHorizontal;
+                carroRetangulo.x += saltoCarroHorizontal;
             }
-
-            // Logica
+            if (IsKeyPressed(KEY_LEFT) && carroPosicao.x > limiteEsquerda)
+            {
+                carroPosicao.x -= saltoCarroHorizontal;
+                carroRetangulo.x -= saltoCarroHorizontal;
+            }
             
             for (int i = 0; i < Inimigo_Amount; i++)
             {
-                if (inimigo[i].ativo)
-                {
-                    inimigo[i].rec.x -= velocidadeInimigo;
-                    if (inimigo[i].rec.x + inimigo[i].rec.width <= 0){
+                
+                inimigo[i].rec.x -= velocidadePista;
 
-                        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarro;
-                        inimigo[i].ativo = false;
-                        if( i > 0 )
-                            while (inimigo[i].rec.y == inimigo[i-1].rec.y)
-                                inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarro;
+                if (inimigo[Inimigo_Amount-1].rec.x  <= screenWidth / 2 ){
+
+                    if( i == 0 && inimigo[i].rec.x + brt.width <= 0 ){
+
+                        inimigoAleatorio( inimigo, obstaculos, i );
+                        inimigo[i].rec.x = screenWidth;
+                        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarroVertical;
+
+                        while (inimigo[i].rec.y == inimigo[Inimigo_Amount-1].rec.y)
+                            inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarroVertical;
                     }
-                }
-                else{
-                    if( i > 0 )
-                        inimigo[i].rec.x = inimigo[i-1].rec.x + inimigo[i-1].rec.width + distanciaInimigos;
-                    else
-                        inimigo[i].rec.x = screenWidth + inimigo[i].rec.width / velocidadeInimigo + distanciaInimigos;
+                        
+                    else if ( i > 0 && inimigo[i].rec.x + brt.width <= 0 ){
+
+                        inimigoAleatorio( inimigo, obstaculos, i );
+                        inimigo[i].rec.x = inimigo[i-1].rec.x + inimigo[i-1].rec.width + distanciaInimigos;  
+                        inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarroVertical;
+                        
+                        while (inimigo[i].rec.y == inimigo[i-1].rec.y)
+                            inimigo[i].rec.y = (float)screenHeight / 2 + 70 + GetRandomValue(-2, 2) * saltoCarroVertical;
+                        
+                    }                    
                 }
             }
 
@@ -240,13 +257,26 @@ int main(void)
 
             for (int i = 0; i < Inimigo_Amount; i++)
             {
-                if (inimigo[i].ativo)
+                
+                if (CheckCollisionRecs(inimigo[i].rec, carroRetangulo))
                 {
-                    if (CheckCollisionRecs(inimigo[i].rec, carroRetangulo))
-                    {
+                    if( inimigo[i].obstaculoTipo == 0) {
                         printf("\nTEVE COLISAO DANADO\n");
+                            
                     }
-                }
+                    else if( inimigo[i].obstaculoTipo == 1) {
+                        printf("\nTEVE COLISAO DANADO\n");
+                            
+                    }
+                    else if( inimigo[i].obstaculoTipo == 2) {
+                        printf("\nTEVE COLISAO DANADO\n");
+                            
+                    }
+                    else if( inimigo[i].obstaculoTipo == 3) {
+                        printf("\nTEVE COLISAO DANADO\n");
+                            
+                    }
+                }     
             }
 
             break;
@@ -284,11 +314,11 @@ int main(void)
             frameCar.x = (float)frameAtualCarro * (float)carro.width / 2;
         }
 
-        pistaPosicao.x -= 7;
+        pistaPosicao.x -= velocidadePista;
         if (pistaPosicao.x <= -roadTexture.width)
             pistaPosicao.x = 0;
 
-        meioFioPosicao.x -= 7;
+        meioFioPosicao.x -= velocidadePista;
         if (meioFioPosicao.x <= -meiofioTexture.width)
             meioFioPosicao.x = 0;
 
@@ -296,7 +326,7 @@ int main(void)
         if (ceuPosicao.x <= -ceuTexture.width)
             ceuPosicao.x = 0;
 
-        cidadePosicao.x -= 7;
+        cidadePosicao.x -= velocidadePista;
         if (cidadePosicao.x <= -cidadeTexture.width)
             cidadePosicao.x = 0;        
 
@@ -335,12 +365,17 @@ int main(void)
 
             for (int i = 0; i < Inimigo_Amount; i++)
             {
-                if (inimigo[i].ativo)
-                {
-                    DrawRectangleRec(inimigo[i].rec, (Color){0,0,0,0});
-                    // DrawRectangleRec(inimigo[i].rec, WHITE);
+                DrawRectangleRec(inimigo[i].rec, (Color){0, 0, 0, 0});
+                // DrawRectangleRec(inimigo[i].rec, WHITE);
+                if( inimigo[i].obstaculoTipo == 0)
                     DrawTexture(brt, inimigo[i].rec.x, inimigo[i].rec.y-36, WHITE);
-                }
+                else if( inimigo[i].obstaculoTipo == 1) 
+                    DrawTexture(buraco, inimigo[i].rec.x, inimigo[i].rec.y+6, WHITE);
+                else if( inimigo[i].obstaculoTipo == 2) 
+                    DrawTexture(tubarao, inimigo[i].rec.x, inimigo[i].rec.y-6, WHITE);
+                else if( inimigo[i].obstaculoTipo == 3) 
+                    DrawTexture(coinTexture, inimigo[i].rec.x, inimigo[i].rec.y, WHITE);    
+                
             }
 
             DrawTextureEx(meiofioTexture, meioFioPosicao, 0.0f, 1.0f, WHITE);
@@ -371,6 +406,8 @@ int main(void)
     UnloadTexture(loseTelaFinal);
     UnloadTexture(carro);
     UnloadTexture(meiofioTexture);
+    UnloadTexture(buraco);
+    UnloadTexture(tubarao);
     UnloadSound(intro);
     //--------------------------------------------------------------------------------------
     CloseAudioDevice();
@@ -378,4 +415,29 @@ int main(void)
     //--------------------------------------------------------------------------------------
 
     return 0;
+}
+
+void inimigoAleatorio( Inimigo inimigo[], Texture2D obstaculos[], int indice ){
+
+    int random;
+
+    random = GetRandomValue(1,3);
+
+    if(random == 1){
+
+        inimigo[indice].rec.width = obstaculos[0].width;
+        inimigo[indice].obstaculoTipo = 0;
+    }
+    else if(random == 2){
+
+        inimigo[indice].rec.width = obstaculos[1].width;
+        inimigo[indice].obstaculoTipo = 1;
+    }
+    else{
+
+        inimigo[indice].rec.width = obstaculos[2].width;
+        inimigo[indice].obstaculoTipo = 2;
+    }
+
+
 }
