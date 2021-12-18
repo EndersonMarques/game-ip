@@ -41,12 +41,17 @@ int main(void)
     // Inicializando sons
     Sound intro = LoadSound("assets/intro.mp3");
     Sound cashSound = LoadSound("assets/cashSound.mp3");
+    Sound explosao = LoadSound("assets/explosao.mp3");
     // Tocando
     PlaySound(intro);
     bool pause = false;
 
     Texture2D textura = LoadTexture("assets/banner.png");
     Texture2D loseTelaFinal = LoadTexture("assets/lose-telafinal.png");
+    Texture2D loseSprite = LoadTexture("assets/lose_sprit.png");
+    Texture2D telaWinner = LoadTexture("assets/winner.png");
+    Rectangle frame_loseSprite = {0.0f, 0.0f, loseSprite.width / 12, loseSprite.height};
+    int loseAtual = 0;
 
     // Carregando textura de loading
     Texture2D loadingTexture = LoadTexture("assets/loading-bar.png"); // Texture loading
@@ -77,9 +82,9 @@ int main(void)
     Vector2 carroPosicao = carroPosicaoInicial;
 
     // Posição na tela da sprit
-    Vector2 position = {306.0f, 170.0f};
+    // Vector2 position = {306.0f, 170.0f};
     // posição da quadro da sprit
-    Rectangle frameRec = {0.0f, 0.0f, (float)loadingTexture.width / 48, (float)loadingTexture.height};
+    // Rectangle frameRec = {0.0f, 0.0f, (float)loadingTexture.width / 48, (float)loadingTexture.height};
 
     // Carregar textura obstaculos
 
@@ -87,6 +92,10 @@ int main(void)
     Texture2D buraco = LoadTexture("assets/hole.png");
     Texture2D tubarao = LoadTexture("assets/tubarao.png");
     Texture2D obstaculos[4] = {brt, buraco, tubarao, coinTexture};
+
+    // Menssagem da Logo
+    int contador_logo = 0;
+    char menssagem[] = "Reypedrof é um aluno muito esforçado. Finalmente concluiu seu curso de \nFinanças e decidiu quitar de vez a dívida com 'LK, o inimigo do trabalho',\nadquirida durante uma das aulas de COMO FUGIR DE UM AGIOTA. Mas ele\nesqueceu o horário e teve que sair às pressas de casa, então jogou \nas notas de R$ 100, 00 na mala do carro e saiu correndo do bairro da\nTorre para se encontrar com LK no ponto marcado : o Recife antigo.\nChegando lá... Oh não! Nosso herói percebeu que deixou a mala \naberta e todo o dinheiro se espalhou pelas ruas de Recife!\nAgora, terá que voltar dirigindo na contramão enquanto tenta \nrecuperar a quantia. \n\nA vida de Reypedrof está em risco, tome cuidado com os obstáculos\ne ajude-o a resgatar o dinheiro o mais rápido possível!\n                         Pressione ENTER para iniciar";
 
     // Frame atual
     int frameAtual = 0;
@@ -104,7 +113,7 @@ int main(void)
 
     // dinheiro
     int dinheiro = 0;
-    int metaDinheiro = 10;
+    int metaDinheiro = 5000;
 
     // saltos do carro
 
@@ -142,13 +151,13 @@ int main(void)
         switch (telaAtual)
         {
         case LOGO:
-
+            contador_logo++;
             contador_frame++;
             // depois de 5.5 segundos vai pro menu
-            if (contador_frame > 5.5 * 60)
-            {
-                telaAtual = MENU;
-            }
+            // if (contador_frame > 5.5 * 60)
+            // {
+            //     telaAtual = MENU;
+            // }
             break;
 
         case MENU:
@@ -197,6 +206,27 @@ int main(void)
             }
             break;
         case GAMEPLAY:
+
+            framesCounter++;
+            if (framesCounter >= (60 / framesSpeed))
+            {
+                framesCounter = 0;
+                frameAtual++;
+                frameAtualCarro++;
+
+                if (frameAtual > 50)
+                {
+                    frameAtual = 0;
+                }
+
+                if (frameAtualCarro > 2)
+                {
+                    frameAtualCarro = 0;
+                }
+
+                // frameRec.x = (float)frameAtual * (float)loadingTexture.width / 48;
+                frameCar.x = (float)frameAtualCarro * (float)carro.width / 2;
+            }
 
             if (IsKeyPressed(KEY_DOWN) && carroPosicao.y < limiteBaixo)
             {
@@ -262,23 +292,26 @@ int main(void)
                     {
                         printf("\nTEVE COLISAO BRT\n");
                         telaAtual = FIM;
+                        PlaySound(explosao);
                     }
                     else if (inimigo[i].obstaculoTipo == 1)
                     {
                         printf("\nTEVE COLISAO BURACO\n");
                         telaAtual = FIM;
+                        PlaySound(explosao);
                     }
                     else if (inimigo[i].obstaculoTipo == 2)
                     {
                         printf("\nTEVE COLISAO TUBARAO\n");
                         telaAtual = FIM;
+                        PlaySound(explosao);
                     }
                     else if (inimigo[i].obstaculoTipo == 3 && inimigo[i].TeveColisao == 0)
                     {
 
                         inimigo[i].TeveColisao = 1;
                         printf("\nMoeda\n");
-                        dinheiro++;
+                        dinheiro += 100;
                         PlaySound(cashSound);
                     }
                 }
@@ -304,6 +337,21 @@ int main(void)
 
             break;
         case FIM:
+
+            framesCounter++;
+            if (framesCounter >= (60 / framesSpeed))
+            {
+                framesCounter = 0;
+                loseAtual++;
+
+                if (loseAtual > 12)
+                {
+                    loseAtual = 0;
+                }
+
+                frame_loseSprite.x = (float)loseAtual * (float)loseSprite.width / 12;
+            }
+
             if (IsKeyPressed(KEY_ENTER))
             {
                 telaAtual = MENU;
@@ -316,27 +364,6 @@ int main(void)
         }
         //----------------------------------------------------------------------------------
         // TODO: Update your variables here
-
-        framesCounter++;
-        if (framesCounter >= (60 / framesSpeed))
-        {
-            framesCounter = 0;
-            frameAtual++;
-            frameAtualCarro++;
-
-            if (frameAtual > 50)
-            {
-                frameAtual = 0;
-            }
-
-            if (frameAtualCarro > 2)
-            {
-                frameAtualCarro = 0;
-            }
-
-            frameRec.x = (float)frameAtual * (float)loadingTexture.width / 48;
-            frameCar.x = (float)frameAtualCarro * (float)carro.width / 2;
-        }
 
         pistaPosicao.x -= velocidadePista;
         if (pistaPosicao.x <= -roadTexture.width)
@@ -360,17 +387,22 @@ int main(void)
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
         switch (telaAtual)
         {
         case LOGO:
-            DrawText("Carregando o Jogo Peste", 200, 120, 35, DARKGREEN);
-            DrawTextureRec(loadingTexture, frameRec, position, RAYWHITE);
+            // DrawText("Carregando o Jogo Peste", 200, 120, 35, DARKGREEN);
+            // DrawTextureRec(loadingTexture, frameRec, position, RAYWHITE);
+            DrawText(TextSubtext(menssagem, 0, contador_logo / 2), 30, 30, 20, BLUE);
+            if (IsKeyPressed(KEY_ENTER))
+            {
+                telaAtual = MENU;
+            }
             break;
 
         case MENU:
             DrawTexture(textura, screenWidth / 2 - textura.width / 2, screenHeight / 2 - textura.height / 2, WHITE);
-            DrawText("Pressione ENTER para iniciar", 280, 350, 20, RED);
+            DrawText("Pressione ENTER para iniciar", 100, 50, 40, RAYWHITE);
             break;
         case GAMEPLAY:
         {
@@ -408,16 +440,18 @@ int main(void)
             DrawTextureEx(meiofioTexture, meioFioPosicao, 0.0f, 1.0f, WHITE);
             DrawTextureEx(meiofioTexture, (Vector2){meiofioTexture.width + meioFioPosicao.x, pistaPosicao.y + roadTexture.height}, 0.0f, 1.0f, WHITE);
 
-            DrawText(TextFormat("Dinheiro: %i", dinheiro), screenWidth - 170, 20, 20, RED);
+            DrawText(TextFormat("Dinheiro: R$ %i,00 / %i", dinheiro, metaDinheiro), screenWidth - 300, 20, 20, WHITE);
             break;
         }
         case FIM:
             if (dinheiro == metaDinheiro)
             {
-                DrawText("Parabens", 0, 0, 40, RED);
+                DrawTexture(telaWinner, 0.0, 0.0, WHITE);
+                // DrawText("Parabens", 0, 0, 40, RED);
             }
             else
             {
+                DrawTextureRec(loseSprite, frame_loseSprite, (Vector2){screenWidth / 2 - frame_loseSprite.width / 2, screenHeight / 2 - loseSprite.height / 2}, WHITE);
                 DrawTexture(loseTelaFinal, screenWidth / 2 - loseTelaFinal.width / 2, 20, WHITE);
                 DrawText("Pressione ENTER para jogar de novo", 85, 240, 35, DARKBLUE);
             }
@@ -439,12 +473,15 @@ int main(void)
     UnloadTexture(brt);
     UnloadTexture(coinTexture);
     UnloadTexture(loseTelaFinal);
+    UnloadTexture(loseSprite);
     UnloadTexture(carro);
     UnloadTexture(meiofioTexture);
     UnloadTexture(buraco);
     UnloadTexture(tubarao);
+    UnloadTexture(telaWinner);
     UnloadSound(intro);
     UnloadSound(cashSound);
+    UnloadSound(explosao);
     //--------------------------------------------------------------------------------------
     CloseAudioDevice();
     CloseWindow(); // Close window and OpenGL context
