@@ -120,7 +120,7 @@ int main(void)
 
     // dinheiro
     int dinheiro = 0;
-    int metaDinheiro = 500;
+    int metaDinheiro = 5000;
 
     // saltos do carro
 

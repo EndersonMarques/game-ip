@@ -16,7 +16,7 @@
   <li> <a href="https://github.com/matheuslafayette"> Matheus Lafayette </a> </li>
   <li> <a href="https://github.com/edbillie"> Carlos Edgar </a> </li>
   <li> <a href="https://github.com/Pbgsa"> Pedro Basílio </a> </li>
-  <li> José Basílio </li>
+  <li> <a href="https://github.com/josebasilioo"> José Basílio </a> </li>
   <li> <a href="https://github.com/TAKYO33" > Luan Esutáquio </a> </li>
   <li> <a href="https://github.com/EndersonMarques"> Enderson Marques </a> </li>
 </u>
