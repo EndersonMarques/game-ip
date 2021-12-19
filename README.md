@@ -1,6 +1,6 @@
 # game-ip
 
-<h2> Nome do Jogo </h2>
+<h2> Velozes e Agiotas </h2>
 
 <h4> 
   Reypedrof é um aluno muito esforçado. Finalmente concluiu seu curso de Finanças e decidiu quitar de vez a dívida com "LK, o inimigo do trabalho", adquirida durante uma das aulas de COMO FUGIR DE UM AGIOTA. Mas ele esqueceu o horário e teve que sair às pressas de casa, então jogou as notas de R$ 100,00 na mala do carro e saiu correndo do bairro da Torre para se encontrar com LK no ponto marcado: o Recife antigo. Chegando lá... Oh não! Nosso herói percebeu que deixou a mala aberta e todo o dinheiro se espalhou pelas ruas de Recife! Agora, terá que voltar dirigindo na contramão enquanto tenta recuperar a quantia.

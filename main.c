@@ -34,7 +34,7 @@ int main(void)
     int saltoCarroVertical = 35;
     int saltoCarroHorizontal = 67;
 
-    InitWindow(screenWidth, screenHeight, "Game - IP - CIN");
+    InitWindow(screenWidth, screenHeight, "Velozes e agiotas - CIN, UFPE");
 
     // Inicializando device de audio
     InitAudioDevice();
