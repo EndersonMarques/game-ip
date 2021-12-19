@@ -18,5 +18,5 @@
   <li> <a href="https://github.com/Pbgsa"> Pedro Basílio </a> </li>
   <li> José Basílio </li>
   <li> <a href="https://github.com/TAKYO33" > Luan Esutáquio </a> </li>
-  <li> Enderson Marques </li>
+  <li> <a href="https://github.com/EndersonMarques"> Enderson Marques </a> </li>
 </u>
