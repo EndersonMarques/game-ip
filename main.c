@@ -39,11 +39,14 @@ int main(void)
     // Inicializando device de audio
     InitAudioDevice();
     // Inicializando sons
-    Sound intro = LoadSound("assets/intro.mp3");
+    // Sound intro = LoadSound("assets/intro.mp3");
+    Music intro = LoadMusicStream("assets/intro.mp3");
     Sound cashSound = LoadSound("assets/cashSound.mp3");
     Sound explosao = LoadSound("assets/explosao.mp3");
+    Sound winner = LoadSound("assets/winner.mp3");
     // Tocando
-    PlaySound(intro);
+    // PlaySound(intro);
+    PlayMusicStream(intro);
     bool pause = false;
 
     Texture2D textura = LoadTexture("assets/banner.png");
@@ -81,6 +84,10 @@ int main(void)
     Vector2 carroPosicaoInicial = {screenWidth / 2 - carro.width / 2, pistaPosicao.y + roadTexture.height - 60 - saltoCarroVertical - 1};
     Vector2 carroPosicao = carroPosicaoInicial;
 
+    // Carregando camelô
+    Texture2D camelo = LoadTexture("assets/camelo.png");
+    Vector2 cemeloPosicao = {screenWidth - camelo.width - 10, meioFioPosicao.y - camelo.height / 2 + 30};
+
     // Posição na tela da sprit
     // Vector2 position = {306.0f, 170.0f};
     // posição da quadro da sprit
@@ -113,7 +120,7 @@ int main(void)
 
     // dinheiro
     int dinheiro = 0;
-    int metaDinheiro = 5000;
+    int metaDinheiro = 500;
 
     // saltos do carro
 
@@ -138,14 +145,18 @@ int main(void)
     while (!WindowShouldClose()) // Detect window close button or ESC key
     {
         // Update
-
+        UpdateMusicStream(intro); // Refill music stream buffers (if required)
         if (IsKeyPressed(KEY_P))
         {
             pause = !pause;
             if (pause)
-                PauseSound(intro);
+                // PauseSound(intro);
+                StopMusicStream(intro);
             else
-                ResumeSound(intro);
+            {
+                // ResumeSound(intro);
+                PlayMusicStream(intro);
+            }
         }
 
         switch (telaAtual)
@@ -333,7 +344,10 @@ int main(void)
             }
 
             if (dinheiro == metaDinheiro)
+            {
                 telaAtual = FIM;
+                PlaySound(winner);
+            }
 
             break;
         case FIM:
@@ -372,6 +386,10 @@ int main(void)
         meioFioPosicao.x -= velocidadePista;
         if (meioFioPosicao.x <= -meiofioTexture.width)
             meioFioPosicao.x = 0;
+
+        cemeloPosicao.x -= velocidadePista;
+        if (cemeloPosicao.x <= -meiofioTexture.width / 2)
+            cemeloPosicao.x = screenWidth;
 
         ceuPosicao.x -= velocidadeParallax;
         if (ceuPosicao.x <= -ceuTexture.width)
@@ -439,6 +457,7 @@ int main(void)
 
             DrawTextureEx(meiofioTexture, meioFioPosicao, 0.0f, 1.0f, WHITE);
             DrawTextureEx(meiofioTexture, (Vector2){meiofioTexture.width + meioFioPosicao.x, pistaPosicao.y + roadTexture.height}, 0.0f, 1.0f, WHITE);
+            DrawTextureEx(camelo, cemeloPosicao, 0.75f, 1.0f, WHITE);
 
             DrawText(TextFormat("Dinheiro: R$ %i,00 / %i", dinheiro, metaDinheiro), screenWidth - 300, 20, 20, WHITE);
             break;
@@ -479,9 +498,12 @@ int main(void)
     UnloadTexture(buraco);
     UnloadTexture(tubarao);
     UnloadTexture(telaWinner);
-    UnloadSound(intro);
+    UnloadTexture(camelo);
+    // UnloadSound(intro);
+    UnloadMusicStream(intro);
     UnloadSound(cashSound);
     UnloadSound(explosao);
+    UnloadSound(winner);
     //--------------------------------------------------------------------------------------
     CloseAudioDevice();
     CloseWindow(); // Close window and OpenGL context
