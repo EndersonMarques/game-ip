@@ -28,4 +28,4 @@
   <li> <a href="https://github.com/EndersonMarques"> Enderson Marques </a> </li>
 </ul>
 
-<h5><i>Disclaimer: Esse jogo foi criado para a disciplina de Introdução a Programação, inspirado por uma questão no The Huxley de autoria do monitor José Daniel e não tem fins lucrativos.</i></h5>
+<h6><i>Disclaimer: Esse jogo foi criado para a disciplina de Introdução a Programação, inspirado por uma <a href="https://thehuxley.com/problem/3832?quizId=6935">questão no The Huxley</a> de autoria do monitor José Daniel e não possui fins lucrativos.</i></h6>
